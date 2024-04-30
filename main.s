@@ -48,11 +48,11 @@ B6_LEN     EQU 1976
 A6_LEN     EQU 1760
 
 ; Define LED masks for each note
-FS7_LED     EQU 0x01  ; Red LED
-C7_LED      EQU 0x02  ; Blue LED
-C8_LED      EQU 0x04  ; Green LED
-B6_LED      EQU 0x08  ; Yellow LED
-A6_LED      EQU 0x10  ; White LED
+FS7_LED     EQU 2_00010  ; Red LED
+C7_LED      EQU 2_00100  ; Blue LED
+C8_LED      EQU 2_01000  ; Green LED
+B6_LED      EQU 2_00100  ; Blue LED
+A6_LED      EQU 2_00010  ; Red LED
 	  
 ; *********************************************************************
 ; ************************* ROM CONSTANTS AREA ************************
@@ -112,9 +112,7 @@ Start
 	BL	PortF_Config
 	
 loop
-
 ;*********** Check SW2 **************
-	
 check_SW2
 	; read switch values
 	LDR	R1, =GPIO_PORTF_DATA_SWS		
@@ -126,19 +124,19 @@ check_SW2
 	
 	; play tune*************************
 	; Play FS7
+	MOV R7, #FS7_LEN          ; Set amount of time to play tone
 	BL play_FS7
 	
-play_FS7	
-	MOV R0, #FS7_LED ; set LED for FS7
+	; Play C7
+	;BL play_FS7
 
+
+play_FS7	
 	; Turn on the LED corresponding to the played tone
     LDR R1, =GPIO_PORTF_DATA_OUT      ; Load address of Port F LEDs
-    LDR R3, [R1]                        ; Load current LED pattern
-    ORR R3, R3, R6                      ; Set LED corresponding to the played tone
-    STR R3, [R1]                        ; Update LED pattern
+    MOV R6, #FS7_LED					; set LED for FS7
+	STR R6, [R1]
 	
-	MOV R7, #FS7_LEN          ; Set amount of time to play tone
-
 	; sound wave goes HI
 	LDR	R1, =GPIO_PORTE_DATA_OUT
 	MOV	R0, #1
@@ -158,21 +156,14 @@ play_FS7
 	SUBS R7, #1
 	BNE	play_FS7
 	
-	; Turn off the LED corresponding to the played tone
-    BIC R3, R3, R6                      ; Clear LED corresponding to the played tone
-    STR R3, [R1]                        ; Update LED pattern
-
-
- ; Continue looping
-    B continue_loop
-
+	LDR R1, =GPIO_PORTF_DATA_OUT      ; Load address of Port F LEDs
+    MOV R6, #2_00000                    ; Clear LED
+	STR R6, [R1]
+	
+	
 continue_loop
     ; Continue looping
     B loop
-	
-;endloop
-	;B	loop
-
 
 
 
