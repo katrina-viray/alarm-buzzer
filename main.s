@@ -1,7 +1,4 @@
 ;****************** main.s ***************
-; Program written by: Dr. D
-; Date Created: 04/22/2024
-; Last Modified: 04/23/2024
 ; Brief description of the program:
 
 ; 		PF0	-->	SW2
@@ -41,8 +38,8 @@ B6_FREQ     EQU 20000
 A6_FREQ     EQU 22727
 	
 ; Define note durations for each tone
-FS7_LEN    EQU 2960
-C7_LEN     EQU 2093
+FS7_LEN    EQU 200
+C7_LEN     EQU 2500
 C8_LEN     EQU 4186
 B6_LEN     EQU 1976
 A6_LEN     EQU 1760
@@ -120,7 +117,7 @@ check_SW2
 	
 	; check SW2
 	LSRS R0, #1
-	BCS	continue_loop
+	BCS.W	continue_loop
 	
 	; play tune*************************
 	; Play FS7
@@ -128,10 +125,14 @@ check_SW2
 	BL play_FS7
 	
 	; Play C7
-	;BL play_FS7
-
+	MOV R7, #C7_LEN          ; Set amount of time to play tone
+	BL play_C7
+	
+	
 
 play_FS7	
+    PUSH {LR}
+
 	; Turn on the LED corresponding to the played tone
     LDR R1, =GPIO_PORTF_DATA_OUT      ; Load address of Port F LEDs
     MOV R6, #FS7_LED					; set LED for FS7
@@ -160,6 +161,132 @@ play_FS7
     MOV R6, #2_00000                    ; Clear LED
 	STR R6, [R1]
 	
+	POP {PC}
+	BX LR
+	
+play_C7	
+	; Turn on the LED corresponding to the played tone
+    LDR R1, =GPIO_PORTF_DATA_OUT      
+    MOV R6, #C7_LED					
+	STR R6, [R1]
+	
+	; sound wave goes HI
+	LDR	R1, =GPIO_PORTE_DATA_OUT
+	MOV	R0, #1
+	STR	R0, [R1]
+	; run SysTick timer
+	MOV R0, #C7_FREQ		; Set frequency
+	BL	SysTick_Wait
+	
+	; sound wave goes LO
+	LDR	R1, =GPIO_PORTE_DATA_OUT
+	MOV	R0, #0
+	STR	R0, [R1]	
+	; run SysTick timer
+	MOV R0, #C7_FREQ		; Set frequency
+	BL	SysTick_Wait
+	
+	SUBS R7, #1
+	BNE	play_C7
+	
+	LDR R1, =GPIO_PORTF_DATA_OUT   
+    MOV R6, #2_00000                    ; Clear LED
+	STR R6, [R1]
+	
+	BX LR
+	
+play_C8
+	; Turn on the LED corresponding to the played tone
+    LDR R1, =GPIO_PORTF_DATA_OUT      
+    MOV R6, #C8_LED					
+	STR R6, [R1]
+	
+	; sound wave goes HI
+	LDR	R1, =GPIO_PORTE_DATA_OUT
+	MOV	R0, #1
+	STR	R0, [R1]
+	; run SysTick timer
+	MOV R0, #C8_FREQ		; Set frequency
+	BL	SysTick_Wait
+	
+	; sound wave goes LO
+	LDR	R1, =GPIO_PORTE_DATA_OUT
+	MOV	R0, #0
+	STR	R0, [R1]	
+	; run SysTick timer
+	MOV R0, #C8_FREQ		; Set frequency
+	BL	SysTick_Wait
+	
+	SUBS R7, #1
+	BNE	play_C8
+	
+	LDR R1, =GPIO_PORTF_DATA_OUT   
+    MOV R6, #2_00000                    ; Clear LED
+	STR R6, [R1]
+	
+	BX LR
+	
+play_B6
+	; Turn on the LED corresponding to the played tone
+    LDR R1, =GPIO_PORTF_DATA_OUT      
+    MOV R6, #B6_LED					
+	STR R6, [R1]
+	
+	; sound wave goes HI
+	LDR	R1, =GPIO_PORTE_DATA_OUT
+	MOV	R0, #1
+	STR	R0, [R1]
+	; run SysTick timer
+	MOV R0, #B6_FREQ		; Set frequency
+	BL	SysTick_Wait
+	
+	; sound wave goes LO
+	LDR	R1, =GPIO_PORTE_DATA_OUT
+	MOV	R0, #0
+	STR	R0, [R1]	
+	; run SysTick timer
+	MOV R0, #B6_FREQ		; Set frequency
+	BL	SysTick_Wait
+	
+	SUBS R7, #1
+	BNE	play_B6
+	
+	LDR R1, =GPIO_PORTF_DATA_OUT   
+    MOV R6, #2_00000                    ; Clear LED
+	STR R6, [R1]
+	
+	BX LR
+	
+play_A6
+	; Turn on the LED corresponding to the played tone
+    LDR R1, =GPIO_PORTF_DATA_OUT      
+    MOV R6, #A6_LED					
+	STR R6, [R1]
+	
+	; sound wave goes HI
+	LDR	R1, =GPIO_PORTE_DATA_OUT
+	MOV	R0, #1
+	STR	R0, [R1]
+	; run SysTick timer
+	MOV R0, #A6_FREQ		; Set frequency
+	BL	SysTick_Wait
+	
+	; sound wave goes LO
+	LDR	R1, =GPIO_PORTE_DATA_OUT
+	MOV	R0, #0
+	STR	R0, [R1]	
+	; run SysTick timer
+	MOV R0, #A6_FREQ		; Set frequency
+	BL	SysTick_Wait
+	
+	SUBS R7, #1
+	BNE	play_A6
+	
+	LDR R1, =GPIO_PORTF_DATA_OUT   
+    MOV R6, #2_00000                    ; Clear LED
+	STR R6, [R1]
+	
+	BX LR
 	
 continue_loop
     ; Continue looping
